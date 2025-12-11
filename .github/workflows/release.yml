@@ -22,26 +22,35 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Check version change
-        id: version
+      - name: Determine bump type
+        id: bump
         run: |
-          git fetch origin main
-          git diff origin/main -- package.json | grep -q '"version"' && echo "changed=true" >> $GITHUB_OUTPUT || echo "changed=false" >> $GITHUB_OUTPUT
+          # Récupérer le nombre de fichiers modifiés dans la PR
+          FILES_CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | wc -l)
+          
+          # Déterminer le type de bump en fonction du nombre de fichiers modifiés
+          if [ "$FILES_CHANGED" -gt 20 ]; then
+            echo "Bump major"
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [ "$FILES_CHANGED" -gt 5 ]; then
+            echo "Bump minor"
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "Bump patch"
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        run: npm run version:${{ steps.bump.outputs.type }}
 
       - name: Build
-        if: steps.version.outputs.changed == 'true'
-        run: npm run build
+        run: npm run release
 
       - name: Create Release
-        if: steps.version.outputs.changed == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/**
+          files: sync.exe
           generate_release_notes: true
-          tag_name: v${{ fromJSON(steps.package.outputs.content).version }}
+          tag_name: v$(node -p "require('./package.json').version")
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get package.json
-        id: package
-        run: echo "content=$(cat package.json)" >> $GITHUB_OUTPUT
