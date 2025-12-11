@@ -4,7 +4,7 @@
   "description": "A bidirectional folder synchronization tool",
   "main": "dist/src/sync.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm i --save-dev @types/fs-extra&&tsc",
     "start": "node dist/src/sync.js",
     "dev": "ts-node src/sync.ts",
     "test": "jest",
