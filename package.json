@@ -1,0 +1,20 @@
+{
+  "name": "sio2-bidirectional-sync",
+  "version": "1.0.0",
+  "description": "A bidirectional folder synchronization tool",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/src/sync.js",
+    "dev": "ts-node src/sync.ts"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "ssh2-sftp-client": "^9.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4",
+    "ts-node": "^10.9.1",
+    "@types/node": "^20.11.16"
+  }
+}
