@@ -84,6 +84,21 @@ async function promptForCredentials(): Promise<{username: string, password: stri
   return { username, password };
 }
 
+// Sauvegarde la configuration (optionnel)
+async function saveConfig(username: string, password: string): Promise<void> {
+  const configPath = path.join(__dirname, '../config.local.json');
+  const localConfig = {
+    https: {
+      auth: {
+        username,
+        password,
+      },
+    },
+  };
+  await fs.writeJson(configPath, localConfig, { spaces: 2 });
+  console.log(`Configuration sauvegardée dans ${configPath}.`);
+}
+
 // Fonction principale de synchronisation
 async function main() {
   console.log("Début de la synchronisation via HTTPS avec JWT...");
@@ -97,6 +112,15 @@ async function main() {
     const credentials = await promptForCredentials();
     username = credentials.username;
     password = credentials.password;
+    
+    // Demander si l'utilisateur veut sauvegarder
+    const rl = readline.createInterface({ input, output });
+    const save = await rl.question('Voulez-vous sauvegarder ces identifiants pour les prochaines fois ? (o/n) ');
+    rl.close();
+    
+    if (save.toLowerCase() === 'o') {
+      await saveConfig(username, password);
+    }
   }
   
   // 2. Obtenir un token JWT
