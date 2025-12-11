@@ -10,6 +10,8 @@ import {
   listFilesOnHttps,
   deleteFileOnHttps,
 } from "./utils";
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
 // Synchronise un fichier local vers le serveur HTTPS
 async function syncFileToRemote(localPath: string, remotePath: string, token: string) {
@@ -71,20 +73,42 @@ async function syncRemoteToLocal(remoteDir: string, localDir: string, token: str
   }
 }
 
+// Demande les identifiants à l'utilisateur si non fournis
+async function promptForCredentials(): Promise<{username: string, password: string}> {
+  const rl = readline.createInterface({ input, output });
+  
+  const username = await rl.question('Nom d\'utilisateur : ');
+  const password = await rl.question('Mot de passe : ', { hideEchoBack: true });
+  
+  rl.close();
+  return { username, password };
+}
+
 // Fonction principale de synchronisation
 async function main() {
   console.log("Début de la synchronisation via HTTPS avec JWT...");
   
-  // 1. Obtenir un token JWT
-  const token = await getJwtToken(config.https.auth?.username || "", config.https.auth?.password || "");
+  // 1. Vérifier les identifiants
+  let username = config.https.auth?.username || "";
+  let password = config.https.auth?.password || "";
+  
+  if (!username || !password) {
+    console.log("Identifiants non fournis dans la configuration. Veuillez les saisir :");
+    const credentials = await promptForCredentials();
+    username = credentials.username;
+    password = credentials.password;
+  }
+  
+  // 2. Obtenir un token JWT
+  const token = await getJwtToken(username, password);
   if (!token) {
-    console.error("Impossible d'obtenir un token JWT.");
+    console.error("Impossible d'obtenir un token JWT. Vérifiez vos identifiants.");
     return;
   }
   console.log("Token JWT obtenu avec succès.");
   
   try {
-    // 2. Synchroniser les fichiers
+    // 3. Synchroniser les fichiers
     await syncLocalToRemote(config.localDir, config.remoteDir, token);
     await syncRemoteToLocal(config.remoteDir, config.localDir, token);
     console.log("Synchronisation terminée.");
