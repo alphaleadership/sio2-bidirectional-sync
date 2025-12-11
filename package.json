@@ -9,7 +9,10 @@
     "dev": "ts-node src/sync.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "release": "npm run build && echo 'Release ready in dist/'"
+    "version:patch": "npm version patch -m 'Bump version to %s'",
+    "version:minor": "npm version minor -m 'Bump version to %s'",
+    "version:major": "npm version major -m 'Bump version to %s'",
+    "release": "npm run build && npm run version:patch && git push --tags"
   },
   "dependencies": {
     "axios": "^1.6.7",
