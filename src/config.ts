@@ -1,21 +1,23 @@
-// Chemins des dossiers à synchroniser
-interface SftpConfig {
-  host: string;
-  port: number;
-  username: string;
-  password?: string;
-  privateKey?: string;
+// Configuration pour la synchronisation via HTTPS
+interface HttpsConfig {
+  baseUrl: string; // URL de base du serveur (ex: https://ton-serveur.com/api/files)
+  auth?: {
+    username?: string;
+    password?: string;
+    token?: string; // Token d'authentification si nécessaire
+  };
 }
 
 export const config = {
   localDir: "./local",
-  remoteDir: "/remote", // Chemin sur le serveur distant
-  sftp: {
-    host: "ton-serveur.com", // Remplace par l'adresse de ton serveur
-    port: 22,
-    username: "ton-utilisateur", // Remplace par ton utilisateur
-    password: "ton-mot-de-passe", // Remplace par ton mot de passe (ou utilise privateKey)
-    // privateKey: "-----BEGIN RSA PRIVATE KEY-----...", // Optionnel : clé SSH privée
+  remoteDir: "/", // Chemin de base sur le serveur (peut être vide ou "/" pour la racine)
+  https: {
+    baseUrl: "https://ton-serveur.com/api/files", // Remplace par l'URL de ton API/serveur
+    auth: {
+      // username: "ton-utilisateur", // Optionnel
+      // password: "ton-mot-de-passe", // Optionnel
+      // token: "ton-token", // Optionnel
+    },
   },
   syncOptions: {
     overwrite: false, // Ne pas écraser les fichiers existants en cas de conflit
