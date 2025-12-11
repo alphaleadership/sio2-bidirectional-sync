@@ -17,24 +17,31 @@ export async function copyFile(src: string, dest: string): Promise<void> {
   await fs.copyFile(src, dest);
 }
 
-// Télécharge un fichier depuis le serveur HTTPS
-export async function downloadFileFromHttps(remotePath: string, localPath: string) {
+// Obtient un token JWT depuis l'API
+export async function getJwtToken(username: string, password: string): Promise<string> {
+  const response = await axios.post(`${config.https.baseUrl}/auth/login`, {
+    username,
+    password,
+  });
+  return response.data.token;
+}
+
+// Télécharge un fichier depuis le serveur HTTPS avec token JWT
+export async function downloadFileFromHttps(remotePath: string, localPath: string, token: string) {
   const url = `${config.https.baseUrl}${remotePath}`;
   const response = await axios.get(url, {
     responseType: "arraybuffer",
-    auth: config.https.auth?.username ? {
-      username: config.https.auth.username,
-      password: config.https.auth.password,
-    } : undefined,
-    headers: config.https.auth?.token ? { Authorization: `Bearer ${config.https.auth.token}` } : {},
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
   await fs.ensureDir(path.dirname(localPath));
   await fs.writeFile(localPath, response.data);
   console.log(`Fichier téléchargé : ${url} → ${localPath}`);
 }
 
-// Envoie un fichier vers le serveur HTTPS
-export async function uploadFileToHttps(localPath: string, remotePath: string) {
+// Envoie un fichier vers le serveur HTTPS avec token JWT
+export async function uploadFileToHttps(localPath: string, remotePath: string, token: string) {
   const url = `${config.https.baseUrl}${remotePath}`;
   const form = new FormData();
   form.append("file", fs.createReadStream(localPath));
@@ -42,25 +49,30 @@ export async function uploadFileToHttps(localPath: string, remotePath: string) {
   await axios.post(url, form, {
     headers: {
       ...form.getHeaders(),
-      ...(config.https.auth?.token ? { Authorization: `Bearer ${config.https.auth.token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
-    auth: config.https.auth?.username ? {
-      username: config.https.auth.username,
-      password: config.https.auth.password,
-    } : undefined,
   });
   console.log(`Fichier envoyé : ${localPath} → ${url}`);
 }
 
-// Liste les fichiers sur le serveur HTTPS (exemple générique, à adapter selon ton API)
-export async function listFilesOnHttps(remoteDir: string) {
+// Liste les fichiers sur le serveur HTTPS avec token JWT
+export async function listFilesOnHttps(remoteDir: string, token: string) {
   const url = `${config.https.baseUrl}${remoteDir}`;
   const response = await axios.get(url, {
-    auth: config.https.auth?.username ? {
-      username: config.https.auth.username,
-      password: config.https.auth.password,
-    } : undefined,
-    headers: config.https.auth?.token ? { Authorization: `Bearer ${config.https.auth.token}` } : {},
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return response.data; // Supposons que l'API retourne une liste de fichiers
+  return response.data;
+}
+
+// Supprime un fichier sur le serveur HTTPS avec token JWT
+export async function deleteFileOnHttps(remotePath: string, token: string) {
+  const url = `${config.https.baseUrl}${remotePath}`;
+  await axios.delete(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log(`Fichier supprimé : ${url}`);
 }
