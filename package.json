@@ -9,15 +9,13 @@
     "dev": "ts-node src/sync.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "version:patch": "npm version patch -m 'Bump version to %s'",
-    "version:minor": "npm version minor -m 'Bump version to %s'",
-    "version:major": "npm version major -m 'Bump version to %s'",
     "release": "bun build --compile --minify --outfile sync.exe dist/src/sync.js"
   },
   "dependencies": {
     "axios": "^1.6.7",
     "fs-extra": "^11.1.1",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
+    "semver": "^7.6.0"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
