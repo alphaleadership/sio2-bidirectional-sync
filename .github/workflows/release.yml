@@ -44,11 +44,11 @@ jobs:
           fi
 
       - name: Bump version
-        run: npm run version:${{ steps.bump.outputs.type }}
+        run: npm run version:${{ steps.bump.outputs.type }} -m "Bump version to %s"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
-        run: npm run release
+        run: npm run build && npm run release
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
