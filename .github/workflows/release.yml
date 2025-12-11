@@ -45,7 +45,8 @@ jobs:
 
       - name: Bump version
         run: npm run version:${{ steps.bump.outputs.type }}
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         run: npm run release
 
